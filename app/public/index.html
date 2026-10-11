@@ -45,7 +45,6 @@
 
         .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
 
-        /* Header */
         header {
             text-align: center;
             margin-bottom: 3rem;
@@ -76,7 +75,6 @@
         }
         header p { color: var(--text-secondary); font-size: 1.1rem; }
 
-        /* Logout Button */
         .logout-btn {
             position: absolute;
             top: 1.5rem;
@@ -99,7 +97,6 @@
             box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
         }
 
-        /* Cards Grid */
         .events-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -184,7 +181,6 @@
         .event-seats { font-size: 0.85rem; color: var(--text-secondary); }
         .event-seats strong { color: var(--accent-cyan); }
 
-        /* Buttons & Forms */
         button {
             background: var(--gradient-button);
             color: white;
@@ -236,7 +232,6 @@
             font-size: 1.8rem;
             font-weight: 700;
         }
-        .card h2::before { margin-right: 0.5rem; }
         input, select {
             width: 100%; padding: 1rem 1.2rem; margin-bottom: 1rem;
             background: var(--bg-main); border: 1px solid var(--border-color);
@@ -247,7 +242,6 @@
         input:focus, select:focus { outline: none; border-color: var(--accent-purple); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
         input::placeholder { color: var(--text-secondary); }
 
-        /* Admin Table */
         .admin-card { max-width: 100% !important; }
         table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; background: var(--bg-main); border-radius: 14px; overflow: hidden; border: 1px solid var(--border-color); }
         th, td { padding: 1rem 1.2rem; text-align: left; border-bottom: 1px solid var(--border-color); }
@@ -263,7 +257,6 @@
         tr:hover td { background: rgba(139, 92, 246, 0.05); }
         tr:last-child td { border-bottom: none; }
 
-        /* Toast Notification */
         .toast {
             position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
             background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
@@ -282,7 +275,6 @@
 
         .hidden { display: none !important; }
 
-        /* User Info Badge */
         .user-badge {
             display: inline-flex;
             align-items: center;
@@ -302,7 +294,6 @@
             color: var(--accent-pink);
         }
 
-        /* Section Titles */
         .section-title {
             font-size: 2.2rem;
             font-weight: 800;
@@ -313,7 +304,6 @@
             background-clip: text;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             header h1 { font-size: 2rem; }
             .events-grid { grid-template-columns: 1fr; }
@@ -333,25 +323,21 @@
         <!-- LOGIN -->
         <div id="login-section" class="card">
             <h2>🔐 Secure Login</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem; line-height: 1.8;">
-                <i>👤 User: <b style="color: var(--accent-cyan);">user</b> / <b style="color: var(--accent-cyan);">password123</b></i><br>
-                <i>️ Admin: <b style="color: var(--accent-pink);">admin</b> / <b style="color: var(--accent-pink);">password123</b></i>
-            </p>
             <input type="text" id="username" placeholder="👤 Username">
-            <input type="password" id="password" placeholder=" Password">
+            <input type="password" id="password" placeholder="🔒 Password">
             <button onclick="login()">✨ Access Dashboard</button>
             <div id="login-msg" style="margin-top: 1rem; text-align: center;"></div>
         </div>
 
         <!-- BOOKING -->
         <div id="booking-section" class="hidden">
-            <h2 class="section-title"> Upcoming Events</h2>
+            <h2 class="section-title">🌟 Upcoming Events</h2>
             <div id="events-list" class="events-grid">Loading events...</div>
             
             <div class="card" style="margin-top: 3rem;">
                 <h2>🎟️ Reserve Your Seat</h2>
                 <select id="event-select"></select>
-                <input type="text" id="booker-name" placeholder="👤 Full Name">
+                <input type="text" id="booker-name" placeholder=" Full Name">
                 <input type="email" id="booker-email" placeholder="📧 Email Address">
                 <button onclick="bookTicket()">✅ Confirm Booking</button>
                 <div id="booking-msg" style="margin-top: 1rem; text-align: center;"></div>
@@ -368,7 +354,6 @@
         </div>
     </div>
 
-    <!-- Toast Container -->
     <div id="toast" class="toast"></div>
 
     <script>
@@ -376,7 +361,6 @@
         let currentUser = '';
         let userRole = '';
 
-        // --- TOAST NOTIFICATION SYSTEM ---
         function showToast(message, type = 'error') {
             const toast = document.getElementById('toast');
             toast.innerText = message;
@@ -384,7 +368,6 @@
             setTimeout(() => toast.className = 'toast', 4000);
         }
 
-        // --- AUTHENTICATION ---
         async function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
@@ -404,10 +387,9 @@
                 document.getElementById('booking-section').classList.remove('hidden');
                 document.getElementById('logout-btn').classList.remove('hidden');
                 
-                // Show user badge
                 const userInfo = document.getElementById('user-info');
                 userInfo.className = `user-badge ${data.role === 'admin' ? 'admin' : ''}`;
-                userInfo.innerHTML = `${data.role === 'admin' ? '🛡️' : ''} ${data.username} (${data.role})`;
+                userInfo.innerHTML = `${data.role === 'admin' ? '🛡️' : '👤'} ${data.username} (${data.role})`;
                 userInfo.classList.remove('hidden');
                 
                 if (data.role === 'admin') document.getElementById('admin-section').classList.remove('hidden');
@@ -418,7 +400,6 @@
             }
         }
 
-        // --- LOGOUT ---
         function logout() {
             authToken = '';
             currentUser = '';
@@ -430,16 +411,14 @@
             document.getElementById('logout-btn').classList.add('hidden');
             document.getElementById('user-info').classList.add('hidden');
             
-            // Clear form fields
             document.getElementById('username').value = '';
             document.getElementById('password').value = '';
             document.getElementById('booker-name').value = '';
             document.getElementById('booker-email').value = '';
             
-            showToast('Logged out successfully ', 'success');
+            showToast('Logged out successfully 👋', 'success');
         }
 
-        // --- LOAD EVENTS & COUNTDOWN ---
         async function loadEvents() {
             const res = await fetch('/api/events');
             const data = await res.json();
@@ -503,7 +482,6 @@
             }, 1000);
         }
 
-        // --- BOOKING WITH 5-MIN COOLDOWN ---
         async function bookTicket() {
             const eventId = parseInt(document.getElementById('event-select').value);
             const userName = document.getElementById('booker-name').value;
@@ -511,7 +489,6 @@
             
             if(!eventId || !userName || !userEmail) return showToast('Please fill all fields', 'error');
 
-            // 5-Minute Cooldown Logic (Per User)
             const lastBookingTime = localStorage.getItem(`lastBooking_${currentUser}`);
             const now = Date.now();
             const cooldownPeriod = 5 * 60 * 1000;
@@ -537,7 +514,6 @@
             }
         }
 
-        // --- ADMIN DASHBOARD ---
         async function loadAdminData() {
             const res = await fetch('/api/admin/bookings', { headers: { 'Authorization': `Bearer ${authToken}` } });
             const data = await res.json();
