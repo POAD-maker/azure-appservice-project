@@ -5,27 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DevOps Ticket Booking</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
         :root {
-            --bg-main: #0f172a;
-            --bg-card: #1e293b;
-            --bg-card-hover: #263346;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --accent-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            --accent-hover: linear-gradient(135deg, #2563eb, #7c3aed);
-            --border-color: #334155;
-            --success: #10b981;
-            --error: #ef4444;
+            --bg-main: #0a0e27;
+            --bg-secondary: #131836;
+            --bg-card: #1a1f42;
+            --bg-card-hover: #222856;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-pink: #ec4899;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --border-color: #2d3561;
+            --gradient-primary: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+            --gradient-button: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            --gradient-button-hover: linear-gradient(135deg, #2563eb, #7c3aed, #db2777);
+            --shadow-glow: 0 0 30px rgba(139, 92, 246, 0.3);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-main);
+            background-image: 
+                radial-gradient(ellipse at top left, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at center, rgba(236, 72, 153, 0.05) 0%, transparent 70%);
             color: var(--text-primary);
             line-height: 1.6;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
@@ -34,158 +49,320 @@
         header {
             text-align: center;
             margin-bottom: 3rem;
-            padding: 2rem;
-            background: var(--bg-card);
-            border-radius: 16px;
+            padding: 2.5rem;
+            background: linear-gradient(135deg, rgba(26, 31, 66, 0.8), rgba(34, 40, 86, 0.8));
+            border-radius: 20px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
         }
         header h1 {
-            font-size: 2.5rem;
-            background: var(--accent-gradient);
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+        header p { color: var(--text-secondary); font-size: 1.1rem; }
+
+        /* Logout Button */
+        .logout-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            width: auto;
+        }
+        .logout-btn:hover {
+            background: var(--accent-red);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
         }
 
         /* Cards Grid */
         .events-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
             gap: 2rem;
             margin-bottom: 3rem;
         }
 
         .event-card {
-            background: var(--bg-card);
-            border-radius: 16px;
+            background: linear-gradient(145deg, var(--bg-card), var(--bg-secondary));
+            border-radius: 20px;
             padding: 2rem;
             border: 1px solid var(--border-color);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            position: relative;
+            overflow: hidden;
         }
-
+        .event-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
         .event-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            background: var(--bg-card-hover);
-            border-color: #8b5cf6;
-            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15);
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--accent-purple);
+            box-shadow: var(--shadow-glow), 0 20px 50px rgba(0,0,0,0.4);
         }
+        .event-card:hover::before { opacity: 1; }
 
         .event-header { margin-bottom: 1.5rem; }
+        
         .event-category {
             display: inline-block;
-            padding: 0.25rem 0.75rem;
-            background: rgba(59, 130, 246, 0.1);
-            color: #60a5fa;
+            padding: 0.3rem 0.9rem;
             border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            font-size: 0.75rem;
+            font-weight: 700;
             margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .event-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .event-date { color: var(--text-secondary); font-size: 0.9rem; }
+        .cat-education { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .cat-technology { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .cat-workshop { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .cat-default { background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3); }
+
+        .event-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary); }
+        .event-date { color: var(--text-secondary); font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
+        .event-date::before { content: '📅'; }
 
         .countdown {
-            background: rgba(15, 23, 42, 0.5);
-            padding: 1rem;
-            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            padding: 1.2rem;
+            border-radius: 14px;
             text-align: center;
             margin: 1.5rem 0;
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            position: relative;
         }
-        .countdown-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
-        .countdown-time { font-size: 1.5rem; font-weight: 700; color: #f8fafc; font-variant-numeric: tabular-nums; }
+        .countdown::before {
+            content: '⏱️';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            padding: 0 8px;
+            font-size: 1.2rem;
+        }
+        .countdown-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.3rem; }
+        .countdown-time { font-size: 1.8rem; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
-        .event-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
-        .event-price { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
+        .event-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-color); }
+        .event-price { font-size: 1.5rem; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .event-seats { font-size: 0.85rem; color: var(--text-secondary); }
+        .event-seats strong { color: var(--accent-cyan); }
 
         /* Buttons & Forms */
         button {
-            background: var(--accent-gradient);
+            background: var(--gradient-button);
             color: white;
             border: none;
-            padding: 0.875rem 1.5rem;
-            border-radius: 10px;
-            font-weight: 600;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             width: 100%;
             font-size: 1rem;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
         }
-        button:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3); }
-        button:active { transform: translateY(0); }
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        button:hover::before { left: 100%; }
+        button:hover { background: var(--gradient-button-hover); transform: translateY(-3px); box-shadow: 0 15px 30px rgba(139, 92, 246, 0.4); }
+        button:active { transform: translateY(-1px); }
 
-        .card { background: var(--bg-card); padding: 2.5rem; border-radius: 16px; border: 1px solid var(--border-color); max-width: 500px; margin: 0 auto; }
-        .card h2 { margin-bottom: 1.5rem; color: var(--text-primary); }
-        input, select {
-            width: 100%; padding: 1rem; margin-bottom: 1rem;
-            background: var(--bg-main); border: 1px solid var(--border-color);
-            border-radius: 10px; color: var(--text-primary); font-size: 1rem;
-            transition: border-color 0.2s;
+        .card { 
+            background: linear-gradient(145deg, var(--bg-card), var(--bg-secondary));
+            padding: 2.5rem; 
+            border-radius: 20px; 
+            border: 1px solid var(--border-color); 
+            max-width: 500px; 
+            margin: 0 auto;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            position: relative;
         }
-        input:focus, select:focus { outline: none; border-color: #3b82f6; }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            border-radius: 20px 20px 0 0;
+        }
+        .card h2 { 
+            margin-bottom: 1.5rem; 
+            color: var(--text-primary);
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        .card h2::before { margin-right: 0.5rem; }
+        input, select {
+            width: 100%; padding: 1rem 1.2rem; margin-bottom: 1rem;
+            background: var(--bg-main); border: 1px solid var(--border-color);
+            border-radius: 12px; color: var(--text-primary); font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--accent-purple); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
+        input::placeholder { color: var(--text-secondary); }
 
         /* Admin Table */
-        table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; background: var(--bg-main); border-radius: 12px; overflow: hidden; }
-        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-color); }
-        th { background: rgba(59, 130, 246, 0.1); color: #60a5fa; font-weight: 600; }
+        .admin-card { max-width: 100% !important; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; background: var(--bg-main); border-radius: 14px; overflow: hidden; border: 1px solid var(--border-color); }
+        th, td { padding: 1rem 1.2rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { 
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2)); 
+            color: var(--accent-cyan); 
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        td { color: var(--text-primary); }
+        tr:hover td { background: rgba(139, 92, 246, 0.05); }
+        tr:last-child td { border-bottom: none; }
 
         /* Toast Notification */
         .toast {
             position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
-            background: var(--bg-card); color: var(--text-primary);
-            padding: 1rem 2rem; border-radius: 12px; border: 1px solid #ef4444;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); opacity: 0; transition: all 0.3s ease; z-index: 1000;
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+            color: var(--text-primary);
+            padding: 1.2rem 2rem; border-radius: 14px; 
+            border: 1px solid var(--accent-red);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
+            opacity: 0; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 1000;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
         }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .toast.success { border-color: var(--success); }
-        .toast.error { border-color: var(--error); }
+        .toast.success { border-color: var(--accent-green); box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2); }
+        .toast.error { border-color: var(--accent-red); box-shadow: 0 20px 40px rgba(239, 68, 68, 0.2); }
 
         .hidden { display: none !important; }
+
+        /* User Info Badge */
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid var(--accent-purple);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-purple);
+            margin-top: 1rem;
+        }
+        .user-badge.admin {
+            background: rgba(236, 72, 153, 0.2);
+            border-color: var(--accent-pink);
+            color: var(--accent-pink);
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 { font-size: 2rem; }
+            .events-grid { grid-template-columns: 1fr; }
+            .logout-btn { position: static; margin-top: 1rem; width: auto; display: inline-block; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🎟️ DevOps Ticket Booking</h1>
-            <p style="color: var(--text-secondary);">Secure, Automated, and Scalable Event Management</p>
+            <p>Secure, Automated, and Scalable Event Management</p>
+            <div id="user-info" class="hidden"></div>
+            <button id="logout-btn" class="logout-btn hidden" onclick="logout()">🚪 Logout</button>
         </header>
 
         <!-- LOGIN -->
         <div id="login-section" class="card">
             <h2>🔐 Secure Login</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;"><i>Demo: <b>admin</b> / <b>password123</b> OR <b>user</b> / <b>password123</b></i></p>
-            <input type="text" id="username" placeholder="Username">
-            <input type="password" id="password" placeholder="Password">
-            <button onclick="login()">Access Dashboard</button>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem; line-height: 1.8;">
+                <i>👤 User: <b style="color: var(--accent-cyan);">user</b> / <b style="color: var(--accent-cyan);">password123</b></i><br>
+                <i>️ Admin: <b style="color: var(--accent-pink);">admin</b> / <b style="color: var(--accent-pink);">password123</b></i>
+            </p>
+            <input type="text" id="username" placeholder="👤 Username">
+            <input type="password" id="password" placeholder=" Password">
+            <button onclick="login()">✨ Access Dashboard</button>
             <div id="login-msg" style="margin-top: 1rem; text-align: center;"></div>
         </div>
 
         <!-- BOOKING -->
         <div id="booking-section" class="hidden">
-            <h2 style="margin-bottom: 2rem; font-size: 2rem;"> Upcoming Events</h2>
+            <h2 class="section-title"> Upcoming Events</h2>
             <div id="events-list" class="events-grid">Loading events...</div>
             
             <div class="card" style="margin-top: 3rem;">
                 <h2>🎟️ Reserve Your Seat</h2>
                 <select id="event-select"></select>
-                <input type="text" id="booker-name" placeholder="Full Name">
-                <input type="email" id="booker-email" placeholder="Email Address">
-                <button onclick="bookTicket()">Confirm Booking</button>
+                <input type="text" id="booker-name" placeholder="👤 Full Name">
+                <input type="email" id="booker-email" placeholder="📧 Email Address">
+                <button onclick="bookTicket()">✅ Confirm Booking</button>
                 <div id="booking-msg" style="margin-top: 1rem; text-align: center;"></div>
             </div>
         </div>
 
         <!-- ADMIN DASHBOARD -->
         <div id="admin-section" class="hidden" style="margin-top: 3rem;">
-            <div class="card" style="max-width: 100%;">
-                <h2>️ Admin Dashboard</h2>
-                <button onclick="loadAdminData()" style="width: auto; margin-bottom: 1rem;">Refresh Data</button>
+            <div class="card admin-card">
+                <h2>🛡️ Admin Dashboard</h2>
+                <button onclick="loadAdminData()" style="width: auto; margin-bottom: 1rem; padding: 0.8rem 1.5rem;">🔄 Refresh Data</button>
                 <div id="admin-view"></div>
             </div>
         </div>
@@ -197,13 +374,14 @@
     <script>
         let authToken = '';
         let currentUser = '';
+        let userRole = '';
 
         // --- TOAST NOTIFICATION SYSTEM ---
         function showToast(message, type = 'error') {
             const toast = document.getElementById('toast');
             toast.innerText = message;
             toast.className = `toast show ${type}`;
-            setTimeout(() => toast.className = 'toast', 3000);
+            setTimeout(() => toast.className = 'toast', 4000);
         }
 
         // --- AUTHENTICATION ---
@@ -220,14 +398,45 @@
             if (res.ok) {
                 authToken = data.token;
                 currentUser = data.username;
+                userRole = data.role;
+                
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('booking-section').classList.remove('hidden');
+                document.getElementById('logout-btn').classList.remove('hidden');
+                
+                // Show user badge
+                const userInfo = document.getElementById('user-info');
+                userInfo.className = `user-badge ${data.role === 'admin' ? 'admin' : ''}`;
+                userInfo.innerHTML = `${data.role === 'admin' ? '🛡️' : ''} ${data.username} (${data.role})`;
+                userInfo.classList.remove('hidden');
+                
                 if (data.role === 'admin') document.getElementById('admin-section').classList.remove('hidden');
                 loadEvents();
-                showToast(`Welcome back, ${data.username}!`, 'success');
+                showToast(`Welcome back, ${data.username}! 🎉`, 'success');
             } else {
                 showToast(data.error, 'error');
             }
+        }
+
+        // --- LOGOUT ---
+        function logout() {
+            authToken = '';
+            currentUser = '';
+            userRole = '';
+            
+            document.getElementById('login-section').classList.remove('hidden');
+            document.getElementById('booking-section').classList.add('hidden');
+            document.getElementById('admin-section').classList.add('hidden');
+            document.getElementById('logout-btn').classList.add('hidden');
+            document.getElementById('user-info').classList.add('hidden');
+            
+            // Clear form fields
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('booker-name').value = '';
+            document.getElementById('booker-email').value = '';
+            
+            showToast('Logged out successfully ', 'success');
         }
 
         // --- LOAD EVENTS & COUNTDOWN ---
@@ -241,12 +450,13 @@
             select.innerHTML = '<option value="">-- Select an Event --</option>';
             
             data.data.forEach(event => {
-                // Create Card
+                const catClass = event.category ? `cat-${event.category.toLowerCase()}` : 'cat-default';
+                
                 const card = document.createElement('div');
                 card.className = 'event-card';
                 card.innerHTML = `
                     <div class="event-header">
-                        <span class="event-category">${event.category}</span>
+                        <span class="event-category ${catClass}">${event.category || 'General'}</span>
                         <div class="event-title">${event.name}</div>
                         <div class="event-date">${event.date}</div>
                     </div>
@@ -256,15 +466,14 @@
                     </div>
                     <div class="event-footer">
                         <div>
-                            <div class="event-price">$${event.price}</div>
-                            <div class="event-seats">${event.availableSeats} seats left</div>
+                            <div class="event-price">$${event.price || 0}</div>
+                            <div class="event-seats"><strong>${event.availableSeats || 0}</strong> seats left</div>
                         </div>
                     </div>
                 `;
                 list.appendChild(card);
 
-                // Add to Select
-                select.innerHTML += `<option value="${event.id}">${event.name} - $${event.price}</option>`;
+                select.innerHTML += `<option value="${event.id}">${event.name} - $${event.price || 0} (${event.availableSeats || 0} left)</option>`;
             });
 
             startCountdowns(data.data);
@@ -273,21 +482,23 @@
         function startCountdowns(events) {
             setInterval(() => {
                 events.forEach(event => {
-                    // Set a default time of 18:00:00 for the countdown calculation
                     const eventDate = new Date(`${event.date}T18:00:00`).getTime();
                     const now = new Date().getTime();
                     const distance = eventDate - now;
 
                     if (distance < 0) {
-                        document.getElementById(`timer-${event.id}`).innerText = "Event Started";
+                        const el = document.getElementById(`timer-${event.id}`);
+                        if (el) el.innerText = "🎉 Event Started!";
                         return;
                     }
 
                     const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                     const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
                     
-                    document.getElementById(`timer-${event.id}`).innerText = `${days}d ${hours}h ${minutes}m`;
+                    const el = document.getElementById(`timer-${event.id}`);
+                    if (el) el.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
                 });
             }, 1000);
         }
@@ -303,11 +514,10 @@
             // 5-Minute Cooldown Logic (Per User)
             const lastBookingTime = localStorage.getItem(`lastBooking_${currentUser}`);
             const now = Date.now();
-            const cooldownPeriod = 5 * 60 * 1000; // 5 minutes in milliseconds
+            const cooldownPeriod = 5 * 60 * 1000;
 
             if (lastBookingTime && (now - parseInt(lastBookingTime)) < cooldownPeriod) {
-                const remainingMins = Math.ceil((cooldownPeriod - (now - parseInt(lastBookingTime))) / 60000);
-                showToast(`Cooldown active. Please wait ${remainingMins} min to book again.`, 'error');
+                showToast('Please wait 5 mins to book again', 'error');
                 return;
             }
 
@@ -319,12 +529,11 @@
 
             const data = await res.json();
             if (res.ok) {
-                // Set cooldown timestamp
                 localStorage.setItem(`lastBooking_${currentUser}`, now);
-                showToast(`Success! Booked for ${data.data.eventName}`, 'success');
-                loadEvents(); // Refresh to update seat count
+                showToast(`Success! Booked for ${data.data.eventName} 🎉`, 'success');
+                loadEvents();
             } else {
-                showToast(data.error, 'error');
+                showToast(data.error || 'Booking failed', 'error');
             }
         }
 
@@ -334,19 +543,40 @@
             const data = await res.json();
             
             if (res.ok) {
-                let html = `<p style="margin-bottom: 1rem; color: var(--text-secondary);">Total Bookings: <strong style="color: var(--text-primary);">${data.totalBookings}</strong></p>`;
-                if (data.data.length > 0) {
-                    html += `<table><tr><th>User</th><th>Event</th><th>Category</th><th>Price</th><th>Date</th></tr>`;
+                let html = `<p style="margin-bottom: 1.5rem; color: var(--text-secondary); font-size: 1.1rem;">
+                    Total Bookings: <strong style="color: var(--accent-cyan); font-size: 1.3rem;">${data.totalBookings || 0}</strong>
+                </p>`;
+                if (data.data && data.data.length > 0) {
+                    html += `<table>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Event</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Booked</th>
+                        </tr>`;
                     data.data.forEach(b => {
-                        html += `<tr><td>${b.userName}<br><small style="color:var(--text-secondary)">${b.userEmail}</small></td><td>${b.eventName}</td><td><span class="event-category">${b.category}</span></td><td>$${b.price}</td><td>${new Date(b.bookedAt).toLocaleDateString()}</td></tr>`;
+                        const catClass = b.category ? `cat-${b.category.toLowerCase()}` : 'cat-default';
+                        const bookedDate = b.bookedAt ? new Date(b.bookedAt).toLocaleDateString('en-US', { 
+                            year: 'numeric', month: 'short', day: 'numeric' 
+                        }) : 'N/A';
+                        html += `<tr>
+                            <td><strong>${b.userName || 'N/A'}</strong></td>
+                            <td style="color: var(--text-secondary);">${b.userEmail || 'N/A'}</td>
+                            <td>${b.eventName || 'N/A'}</td>
+                            <td><span class="event-category ${catClass}">${b.category || 'General'}</span></td>
+                            <td style="color: var(--accent-green); font-weight: 700;">$${b.price || 0}</td>
+                            <td>${bookedDate}</td>
+                        </tr>`;
                     });
                     html += `</table>`;
                 } else {
-                    html += `<p style="color: var(--text-secondary);">No bookings yet.</p>`;
+                    html += `<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">📭 No bookings yet.</p>`;
                 }
                 document.getElementById('admin-view').innerHTML = html;
             } else {
-                showToast(data.error, 'error');
+                showToast(data.error || 'Failed to load data', 'error');
             }
         }
     </script>
