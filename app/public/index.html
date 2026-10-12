@@ -32,11 +32,16 @@
         header h1 { font-size: 2.8rem; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; }
         
         .logout-btn { 
-            position: absolute; top: 1.5rem; right: 1.5rem; 
+            position: fixed; top: 1.5rem; right: 1.5rem; z-index: 1000;
             background: rgba(239, 68, 68, 0.2); border: 1px solid var(--accent-red); color: var(--accent-red); 
-            padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; 
+            padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; 
+            font-size: 0.85rem; width: auto !important; box-shadow: none !important;
+            transition: all 0.3s ease;
         }
-        .logout-btn:hover { background: var(--accent-red); color: white; }
+        .logout-btn:hover { 
+            background: var(--accent-red); color: white;
+            transform: translateY(-2px); box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
 
         .events-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
         .event-card { 
@@ -110,11 +115,14 @@
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         .toast.success { border-color: var(--accent-green); }
         .hidden { display: none !important; }
+        
         .user-badge { 
             display: inline-flex; align-items: center; gap: 0.5rem; 
             background: rgba(139, 92, 246, 0.2); border: 1px solid var(--accent-purple); 
-            padding: 0.4rem 1rem; border-radius: 20px; font-weight: 600; color: var(--accent-purple); margin-top: 1rem; 
+            padding: 0.6rem 1.2rem; border-radius: 20px; font-weight: 600; color: var(--accent-purple); 
+            margin-top: 1rem; font-size: 1rem;
         }
+        
         .section-title { 
             font-size: 2.2rem; font-weight: 800; margin-bottom: 2rem; 
             background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; 
@@ -153,15 +161,28 @@
             color: var(--text-secondary);
             font-size: 1.2rem;
         }
+        
+        .welcome-banner {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(59, 130, 246, 0.15));
+            border: 1px solid var(--accent-green);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-green);
+        }
     </style>
 </head>
 <body>
+    <button id="logout-btn" class="logout-btn hidden" onclick="logout()">Logout</button>
+
     <div class="container">
         <header>
-            <h1>🎟️ DevOps Ticket Booking</h1>
+            <h1>DevOps Ticket Booking</h1>
             <p>Secure, Automated, and Scalable Event Management</p>
             <div id="user-info" class="hidden"></div>
-            <button id="logout-btn" class="logout-btn hidden" onclick="logout()">Logout</button>
         </header>
 
         <div id="auth-section" class="card">
@@ -171,7 +192,7 @@
             </div>
             
             <div id="login-form">
-                <h2>🔐 Welcome Back</h2>
+                <h2>Welcome Back</h2>
                 <input type="text" id="login-username" placeholder="Username">
                 <div class="password-wrapper">
                     <input type="password" id="login-password" placeholder="Password">
@@ -183,7 +204,7 @@
             </div>
 
             <div id="register-form" class="hidden">
-                <h2>📝 Create Account</h2>
+                <h2>Create Account</h2>
                 <input type="text" id="reg-username" placeholder="Choose a Username">
                 <div class="password-wrapper">
                     <input type="password" id="reg-password" placeholder="Choose a Password" oninput="checkPasswordStrength()">
@@ -210,13 +231,15 @@
         </div>
 
         <div id="booking-section" class="hidden">
-            <h2 class="section-title"> Upcoming Events</h2>
+            <div id="welcome-banner" class="welcome-banner hidden"></div>
+            
+            <h2 class="section-title">Upcoming Events</h2>
             <div id="events-list" class="events-grid">
                 <div class="no-events">Loading events...</div>
             </div>
             
             <div class="card" style="margin-top: 3rem;">
-                <h2>🎟️ Reserve Your Seat</h2>
+                <h2>Reserve Your Seat</h2>
                 <select id="event-select">
                     <option value="">-- Select an Event --</option>
                 </select>
@@ -230,7 +253,7 @@
 
         <div id="admin-section" class="hidden" style="margin-top: 3rem;">
             <div class="card admin-card">
-                <h2>🛡️ Admin Dashboard</h2>
+                <h2>Admin Dashboard</h2>
                 <button onclick="loadAdminData()" style="width: auto; margin-bottom: 1rem;">Refresh Data</button>
                 <div id="admin-view"></div>
             </div>
@@ -240,6 +263,15 @@
 
     <script>
         let authToken = ''; let currentUser = ''; let userRole = '';
+        
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+        
+        function getFirstName(username) {
+            const parts = username.split(/[_\-.]/);
+            return capitalize(parts[0]);
+        }
         
         function showToast(message, type = 'error') { 
             const toast = document.getElementById('toast'); 
@@ -291,12 +323,12 @@
             errorDiv.innerText = '';
             successDiv.innerText = '';
             
-            if (!username || !password || !confirm) { errorDiv.innerText = '⚠️ Please fill all fields'; return; }
-            if (password.length < 8) { errorDiv.innerText = '️ Password must be at least 8 characters'; return; }
-            if (!/[a-zA-Z]/.test(password)) { errorDiv.innerText = '️ Password must contain at least one letter'; return; }
-            if (!/[0-9]/.test(password)) { errorDiv.innerText = '⚠️ Password must contain at least one number'; return; }
-            if (!/[^a-zA-Z0-9]/.test(password)) { errorDiv.innerText = '️ Password must contain at least one symbol (!@#$%^&*)'; return; }
-            if (password !== confirm) { errorDiv.innerText = '⚠️ Passwords do not match'; return; }
+            if (!username || !password || !confirm) { errorDiv.innerText = 'Please fill all fields'; return; }
+            if (password.length < 8) { errorDiv.innerText = 'Password must be at least 8 characters'; return; }
+            if (!/[a-zA-Z]/.test(password)) { errorDiv.innerText = 'Password must contain at least one letter'; return; }
+            if (!/[0-9]/.test(password)) { errorDiv.innerText = 'Password must contain at least one number'; return; }
+            if (!/[^a-zA-Z0-9]/.test(password)) { errorDiv.innerText = 'Password must contain at least one symbol'; return; }
+            if (password !== confirm) { errorDiv.innerText = 'Passwords do not match'; return; }
             
             btn.innerText = 'Creating Account...';
             btn.style.opacity = '0.7';
@@ -309,7 +341,7 @@
                 const data = await res.json();
                 
                 if (res.ok) { 
-                    successDiv.innerText = '✅ Successfully registered! Redirecting to login...';
+                    successDiv.innerText = 'Successfully registered! Redirecting to login...';
                     showToast('Registration successful!', 'success');
                     
                     document.getElementById('reg-username').value = '';
@@ -321,17 +353,17 @@
                         switchTab('login');
                         document.getElementById('login-username').value = username;
                         document.getElementById('login-password').focus();
-                        document.getElementById('login-success').innerText = '✅ Account created! Please login with your credentials.';
+                        document.getElementById('login-success').innerText = 'Account created! Please login with your credentials.';
                         btn.innerText = 'Create Account';
                         btn.style.opacity = '1';
                     }, 2000);
                 } else { 
-                    errorDiv.innerText = '⚠️ ' + (data.error || 'Registration failed');
+                    errorDiv.innerText = data.error || 'Registration failed';
                     btn.innerText = 'Create Account';
                     btn.style.opacity = '1';
                 }
             } catch (err) {
-                errorDiv.innerText = '⚠️ Connection error. Please try again.';
+                errorDiv.innerText = 'Connection error. Please try again.';
                 btn.innerText = 'Create Account';
                 btn.style.opacity = '1';
                 console.error('Register error:', err);
@@ -348,7 +380,7 @@
             errorDiv.innerText = '';
             successDiv.innerText = '';
             
-            if (!username || !password) { errorDiv.innerText = '️ Please fill all fields'; return; }
+            if (!username || !password) { errorDiv.innerText = 'Please fill all fields'; return; }
             
             btn.innerText = 'Logging in...';
             btn.style.opacity = '0.7';
@@ -362,23 +394,36 @@
                 
                 if (res.ok) {
                     authToken = data.token; currentUser = data.username; userRole = data.role;
+                    
+                    const firstName = getFirstName(data.username);
+                    
                     document.getElementById('auth-section').classList.add('hidden'); 
                     document.getElementById('booking-section').classList.remove('hidden'); 
                     document.getElementById('logout-btn').classList.remove('hidden');
+                    
                     const userInfo = document.getElementById('user-info'); 
                     userInfo.className = `user-badge`; 
-                    userInfo.innerHTML = `${data.role === 'admin' ? '🛡️' : '👤'} ${data.username} (${data.role})`; 
+                    userInfo.innerHTML = `${data.role === 'admin' ? '🛡️' : '👤'} ${firstName}`; 
                     userInfo.classList.remove('hidden');
+                    
+                    const welcomeBanner = document.getElementById('welcome-banner');
+                    welcomeBanner.innerText = `Welcome, ${firstName}! Happy to see you again.`;
+                    welcomeBanner.classList.remove('hidden');
+                    
                     if (data.role === 'admin') document.getElementById('admin-section').classList.remove('hidden');
                     loadEvents();
-                    showToast(`Welcome back, ${data.username}!`, 'success');
+                    
+                    showToast(`Welcome ${firstName}!`, 'success');
+                    
+                    btn.innerText = 'Access Dashboard';
+                    btn.style.opacity = '1';
                 } else { 
-                    errorDiv.innerText = '️ ' + (data.error || 'Login failed');
+                    errorDiv.innerText = data.error || 'Login failed';
                     btn.innerText = 'Access Dashboard';
                     btn.style.opacity = '1';
                 }
             } catch (err) {
-                errorDiv.innerText = '⚠️ Connection error. Please try again.';
+                errorDiv.innerText = 'Connection error. Please try again.';
                 btn.innerText = 'Access Dashboard';
                 btn.style.opacity = '1';
                 console.error('Login error:', err);
@@ -392,6 +437,7 @@
             document.getElementById('admin-section').classList.add('hidden'); 
             document.getElementById('logout-btn').classList.add('hidden'); 
             document.getElementById('user-info').classList.add('hidden'); 
+            document.getElementById('welcome-banner').classList.add('hidden');
             document.getElementById('login-username').value = '';
             document.getElementById('login-password').value = '';
             document.getElementById('events-list').innerHTML = '<div class="no-events">Loading events...</div>';
@@ -400,23 +446,23 @@
         }
 
         async function loadEvents() {
-            console.log('🔄 Loading events...');
+            console.log('Loading events...');
             const list = document.getElementById('events-list');
             const select = document.getElementById('event-select');
             
             try {
                 const res = await fetch('/api/events');
-                console.log('📡 Events API response status:', res.status);
+                console.log('Events API response status:', res.status);
                 const data = await res.json();
-                console.log('📦 Events data received:', data);
+                console.log('Events data received:', data);
                 
                 if (!res.ok) {
-                    list.innerHTML = '<div class="no-events">❌ Failed to load events. Please refresh.</div>';
+                    list.innerHTML = '<div class="no-events">Failed to load events. Please refresh.</div>';
                     return;
                 }
                 
                 if (!data.data || data.data.length === 0) {
-                    list.innerHTML = '<div class="no-events">📭 No events available</div>';
+                    list.innerHTML = '<div class="no-events">No events available</div>';
                     return;
                 }
                 
@@ -430,7 +476,7 @@
                             <div>
                                 <span class="event-category ${catClass}">${event.category}</span>
                                 <div class="event-title">${event.name}</div>
-                                <div style="color: var(--text-secondary); font-size: 0.9rem;">📅 ${event.date}</div>
+                                <div style="color: var(--text-secondary); font-size: 0.9rem;">${event.date}</div>
                             </div>
                             <div class="countdown">
                                 <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.3rem;">Starts In</div>
@@ -444,11 +490,11 @@
                     select.innerHTML += `<option value="${event.id}">${event.name} - $${event.price} (${event.availableSeats} seats)</option>`;
                 });
                 
-                console.log('✅ Events loaded:', data.data.length);
+                console.log('Events loaded:', data.data.length);
                 startCountdowns(data.data);
             } catch (err) {
-                console.error('❌ Error loading events:', err);
-                list.innerHTML = '<div class="no-events">❌ Network error. Please check your connection.</div>';
+                console.error('Error loading events:', err);
+                list.innerHTML = '<div class="no-events">Network error. Please check your connection.</div>';
             }
         }
 
@@ -457,7 +503,7 @@
                 events.forEach(event => { 
                     const distance = new Date(`${event.date}T18:00:00`).getTime() - new Date().getTime(); 
                     const el = document.getElementById(`timer-${event.id}`); 
-                    if (distance < 0) { if(el) el.innerText = " Started!"; return; } 
+                    if (distance < 0) { if(el) el.innerText = "Started!"; return; } 
                     const d = Math.floor(distance / (1000 * 60 * 60 * 24)); 
                     const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); 
                     const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)); 
@@ -477,13 +523,13 @@
             errorDiv.innerText = '';
             successDiv.innerText = '';
             
-            if(!eventId) { errorDiv.innerText = '⚠️ Please select an event'; return; }
-            if(!userName || !userEmail) { errorDiv.innerText = '⚠️ Please fill all fields'; return; }
+            if(!eventId) { errorDiv.innerText = 'Please select an event'; return; }
+            if(!userName || !userEmail) { errorDiv.innerText = 'Please fill all fields'; return; }
             
             const lastBookingTime = localStorage.getItem(`lastBooking_${currentUser}`); 
             const now = Date.now();
             if (lastBookingTime && (now - parseInt(lastBookingTime)) < 300000) {
-                errorDiv.innerText = '️ Please wait 5 mins to book again';
+                errorDiv.innerText = 'Please wait 5 mins to book again';
                 return;
             }
             
@@ -497,31 +543,30 @@
                 
                 if (res.ok) { 
                     localStorage.setItem(`lastBooking_${currentUser}`, now);
+                    const firstName = getFirstName(currentUser);
                     
-                    // Show beautiful success message
                     successDiv.innerHTML = `
                         <div class="booking-success">
-                            <h3>🎉 Booking Successful!</h3>
+                            <h3>Booking Successful!</h3>
                             <p style="margin: 0.5rem 0;"><strong>Event:</strong> ${data.data.eventName}</p>
                             <p style="margin: 0.5rem 0;"><strong>Category:</strong> ${data.data.category}</p>
                             <p style="margin: 0.5rem 0;"><strong>Price:</strong> $${data.data.price}</p>
                             <p style="margin: 0.5rem 0;"><strong>Booked for:</strong> ${userName}</p>
-                            <p style="margin: 0.5rem 0; color: var(--accent-green);"><strong>✅ Confirmation sent to:</strong> ${userEmail}</p>
+                            <p style="margin: 0.5rem 0; color: var(--accent-green);"><strong>Confirmation sent to:</strong> ${userEmail}</p>
                         </div>
                     `;
                     
-                    showToast(`Success! Booked for ${data.data.eventName}`, 'success');
+                    showToast(`Great choice, ${firstName}!`, 'success');
                     loadEvents();
                     
-                    // Clear form
                     document.getElementById('booker-name').value = '';
                     document.getElementById('booker-email').value = '';
                     document.getElementById('event-select').value = '';
                 } else { 
-                    errorDiv.innerText = '⚠️ ' + (data.error || 'Booking failed');
+                    errorDiv.innerText = data.error || 'Booking failed';
                 }
             } catch (err) {
-                errorDiv.innerText = '️ Network error. Please try again.';
+                errorDiv.innerText = 'Network error. Please try again.';
                 console.error('Booking error:', err);
             }
         }
