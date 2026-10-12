@@ -68,29 +68,16 @@
         }
         .card h2 { margin-bottom: 1.5rem; color: var(--text-primary); font-size: 1.8rem; font-weight: 700; text-align: center; }
         
-        /* Password Input with Toggle */
-        .password-wrapper {
-            position: relative;
-            margin-bottom: 1rem;
-        }
+        .password-wrapper { position: relative; margin-bottom: 1rem; }
         .password-wrapper input {
             width: 100%; padding: 1rem 3rem 1rem 1.2rem; background: var(--bg-main); 
             border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); font-size: 1rem; 
         }
         .password-wrapper input:focus { outline: none; border-color: var(--accent-purple); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
         .toggle-password {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 0.3rem;
-            width: auto;
-            box-shadow: none;
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            background: transparent; border: none; color: var(--text-secondary);
+            cursor: pointer; font-size: 1.2rem; padding: 0.3rem; width: auto; box-shadow: none;
         }
         .toggle-password:hover { color: var(--accent-purple); transform: translateY(-50%) scale(1.1); box-shadow: none; }
         
@@ -134,8 +121,8 @@
         }
         
         .error-msg { color: var(--accent-red); font-size: 0.9rem; margin-top: 0.5rem; text-align: center; min-height: 1.2rem; }
+        .success-msg { color: var(--accent-green); font-size: 0.9rem; margin-top: 0.5rem; text-align: center; min-height: 1.2rem; font-weight: 600; }
         
-        /* Password Strength Indicator */
         .password-rules {
             background: rgba(10, 14, 39, 0.5);
             border: 1px solid var(--border-color);
@@ -144,8 +131,8 @@
             margin-bottom: 1rem;
             font-size: 0.8rem;
         }
-        .password-rules p { margin-bottom: 0.3rem; color: var(--text-secondary); }
-        .rule { display: flex; align-items: center; gap: 0.5rem; transition: color 0.3s ease; }
+        .password-rules p { margin-bottom: 0.3rem; font-weight: 600; color: var(--text-primary); }
+        .rule { display: flex; align-items: center; gap: 0.5rem; transition: color 0.3s ease; margin-bottom: 0.2rem; }
         .rule.valid { color: var(--accent-green); }
         .rule.invalid { color: var(--accent-red); }
         .rule-icon { font-size: 0.9rem; }
@@ -175,6 +162,7 @@
                 </div>
                 <button onclick="login()">Access Dashboard</button>
                 <div id="login-error" class="error-msg"></div>
+                <div id="login-success" class="success-msg"></div>
             </div>
 
             <div id="register-form" class="hidden">
@@ -189,9 +177,8 @@
                     <button type="button" class="toggle-password" onclick="togglePassword('reg-confirm', this)">👁️</button>
                 </div>
                 
-                <!-- Live Password Strength Indicator -->
                 <div class="password-rules" id="password-rules">
-                    <p style="margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">Password must contain:</p>
+                    <p>Password must contain:</p>
                     <div class="rule invalid" id="rule-length"><span class="rule-icon">○</span> At least 8 characters</div>
                     <div class="rule invalid" id="rule-letter"><span class="rule-icon">○</span> At least one letter</div>
                     <div class="rule invalid" id="rule-number"><span class="rule-icon">○</span> At least one number</div>
@@ -201,15 +188,16 @@
                 
                 <button onclick="register()">Create Account</button>
                 <div id="register-error" class="error-msg"></div>
+                <div id="register-success" class="success-msg"></div>
             </div>
         </div>
 
         <div id="booking-section" class="hidden">
-            <h2 class="section-title">🌟 Upcoming Events</h2>
+            <h2 class="section-title"> Upcoming Events</h2>
             <div id="events-list" class="events-grid">Loading events...</div>
             
             <div class="card" style="margin-top: 3rem;">
-                <h2>️ Reserve Your Seat</h2>
+                <h2>🎟️ Reserve Your Seat</h2>
                 <select id="event-select"></select>
                 <input type="text" id="booker-name" placeholder="Full Name">
                 <input type="email" id="booker-email" placeholder="Email Address">
@@ -242,10 +230,11 @@
             document.getElementById('login-form').classList.toggle('hidden', tab !== 'login'); 
             document.getElementById('register-form').classList.toggle('hidden', tab !== 'register'); 
             document.getElementById('login-error').innerText = '';
+            document.getElementById('login-success').innerText = '';
             document.getElementById('register-error').innerText = '';
+            document.getElementById('register-success').innerText = '';
         }
 
-        // --- SHOW/HIDE PASSWORD TOGGLE ---
         function togglePassword(inputId, button) {
             const input = document.getElementById(inputId);
             if (input.type === 'password') {
@@ -257,7 +246,6 @@
             }
         }
 
-        // --- LIVE PASSWORD STRENGTH CHECKER ---
         function checkPasswordStrength() {
             const password = document.getElementById('reg-password').value;
             const confirm = document.getElementById('reg-confirm').value;
@@ -270,7 +258,6 @@
                 match: password.length > 0 && confirm.length > 0 && password === confirm
             };
             
-            // Update UI for each rule
             for (const [key, isValid] of Object.entries(rules)) {
                 const el = document.getElementById(`rule-${key}`);
                 if (el) {
@@ -285,38 +272,53 @@
             const password = document.getElementById('reg-password').value; 
             const confirm = document.getElementById('reg-confirm').value;
             const errorDiv = document.getElementById('register-error');
+            const successDiv = document.getElementById('register-success');
             
             errorDiv.innerText = '';
+            successDiv.innerText = '';
             
             if (!username || !password || !confirm) {
-                errorDiv.innerText = '️ Please fill all fields';
+                errorDiv.innerText = '⚠️ Please fill all fields';
                 return;
             }
             
-            // Password validation
             if (password.length < 8) { errorDiv.innerText = '⚠️ Password must be at least 8 characters'; return; }
-            if (!/[a-zA-Z]/.test(password)) { errorDiv.innerText = '️ Password must contain at least one letter'; return; }
-            if (!/[0-9]/.test(password)) { errorDiv.innerText = '️ Password must contain at least one number'; return; }
+            if (!/[a-zA-Z]/.test(password)) { errorDiv.innerText = '⚠️ Password must contain at least one letter'; return; }
+            if (!/[0-9]/.test(password)) { errorDiv.innerText = '⚠️ Password must contain at least one number'; return; }
             if (!/[^a-zA-Z0-9]/.test(password)) { errorDiv.innerText = '⚠️ Password must contain at least one symbol (!@#$%^&*)'; return; }
-            if (password !== confirm) { errorDiv.innerText = '️ Passwords do not match'; return; }
+            if (password !== confirm) { errorDiv.innerText = '⚠️ Passwords do not match'; return; }
             
-            const res = await fetch('/api/register', { 
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ username, password }) 
-            });
-            const data = await res.json();
-            
-            if (res.ok) { 
-                showToast('Registration successful! Please login.', 'success'); 
-                switchTab('login'); 
-                document.getElementById('login-username').value = username; 
-                // Reset register form
-                document.getElementById('reg-username').value = '';
-                document.getElementById('reg-password').value = '';
-                document.getElementById('reg-confirm').value = '';
-                checkPasswordStrength();
-            } else { 
-                errorDiv.innerText = '⚠️ ' + data.error;
+            try {
+                const res = await fetch('/api/register', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ username, password }) 
+                });
+                const data = await res.json();
+                
+                if (res.ok) { 
+                    successDiv.innerText = '✅ Registration successful! Redirecting to login...';
+                    showToast('Registration successful! Please login.', 'success');
+                    
+                    // Clear register form
+                    document.getElementById('reg-username').value = '';
+                    document.getElementById('reg-password').value = '';
+                    document.getElementById('reg-confirm').value = '';
+                    checkPasswordStrength();
+                    
+                    // Switch to login tab after 1.5 seconds
+                    setTimeout(() => {
+                        switchTab('login');
+                        document.getElementById('login-username').value = username;
+                        document.getElementById('login-password').focus();
+                        document.getElementById('login-success').innerText = '✅ Account created! Please login with your credentials.';
+                    }, 1500);
+                } else { 
+                    errorDiv.innerText = '⚠️ ' + (data.error || 'Registration failed');
+                }
+            } catch (err) {
+                errorDiv.innerText = '⚠️ Network error. Please try again.';
+                console.error('Registration error:', err);
             }
         }
 
@@ -324,35 +326,43 @@
             const username = document.getElementById('login-username').value.trim(); 
             const password = document.getElementById('login-password').value;
             const errorDiv = document.getElementById('login-error');
+            const successDiv = document.getElementById('login-success');
             
             errorDiv.innerText = '';
+            successDiv.innerText = '';
             
             if (!username || !password) {
                 errorDiv.innerText = '⚠️ Please fill all fields';
                 return;
             }
             
-            const res = await fetch('/api/login', { 
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ username, password }) 
-            });
-            const data = await res.json();
-            
-            if (res.ok) {
-                authToken = data.token; currentUser = data.username; userRole = data.role;
-                document.getElementById('auth-section').classList.add('hidden'); 
-                document.getElementById('booking-section').classList.remove('hidden'); 
-                document.getElementById('logout-btn').classList.remove('hidden');
+            try {
+                const res = await fetch('/api/login', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ username, password }) 
+                });
+                const data = await res.json();
                 
-                const userInfo = document.getElementById('user-info'); 
-                userInfo.className = `user-badge`; 
-                userInfo.innerHTML = `${data.role === 'admin' ? '🛡️' : '👤'} ${data.username} (${data.role})`; 
-                userInfo.classList.remove('hidden');
-                
-                if (data.role === 'admin') document.getElementById('admin-section').classList.remove('hidden');
-                loadEvents(); showToast(`Welcome back, ${data.username}!`, 'success');
-            } else { 
-                errorDiv.innerText = '⚠️ ' + data.error;
+                if (res.ok) {
+                    authToken = data.token; currentUser = data.username; userRole = data.role;
+                    document.getElementById('auth-section').classList.add('hidden'); 
+                    document.getElementById('booking-section').classList.remove('hidden'); 
+                    document.getElementById('logout-btn').classList.remove('hidden');
+                    
+                    const userInfo = document.getElementById('user-info'); 
+                    userInfo.className = `user-badge`; 
+                    userInfo.innerHTML = `${data.role === 'admin' ? '🛡️' : '👤'} ${data.username} (${data.role})`; 
+                    userInfo.classList.remove('hidden');
+                    
+                    if (data.role === 'admin') document.getElementById('admin-section').classList.remove('hidden');
+                    loadEvents(); showToast(`Welcome back, ${data.username}!`, 'success');
+                } else { 
+                    errorDiv.innerText = '⚠️ ' + (data.error || 'Login failed');
+                }
+            } catch (err) {
+                errorDiv.innerText = '⚠️ Network error. Please try again.';
+                console.error('Login error:', err);
             }
         }
 
@@ -363,6 +373,8 @@
             document.getElementById('admin-section').classList.add('hidden'); 
             document.getElementById('logout-btn').classList.add('hidden'); 
             document.getElementById('user-info').classList.add('hidden'); 
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
             showToast('Logged out successfully', 'success'); 
         }
 
