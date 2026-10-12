@@ -21,6 +21,7 @@ const database = {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const newUser = { username, password: hashedPassword, role: 'user' };
     db.users.push(newUser);
+    console.log('✅ User registered:', username);
     return newUser;
   },
 
@@ -29,10 +30,14 @@ const database = {
     if (!user) throw new Error('Invalid username or password');
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new Error('Invalid username or password');
+    console.log('✅ User logged in:', username);
     return user;
   },
 
-  getEvents: async () => db.events.map(e => ({ ...e, availableSeats: e.totalSeats - e.bookedSeats })),
+  getEvents: async () => {
+    console.log('📅 Fetching events, count:', db.events.length);
+    return db.events.map(e => ({ ...e, availableSeats: e.totalSeats - e.bookedSeats }));
+  },
   
   createBooking: async (eventId, userName, userEmail) => {
     const event = db.events.find(e => e.id === eventId);
@@ -43,6 +48,7 @@ const database = {
     const booking = { id: Date.now(), eventId, eventName: event.name, category: event.category, price: event.price, userName, userEmail, bookedAt: new Date().toISOString() };
     db.bookings.push(booking);
     event.bookedSeats += 1;
+    console.log('🎟️ Booking created:', booking.eventName, 'for', userName);
     return booking;
   },
 

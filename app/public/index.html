@@ -121,7 +121,7 @@
         }
         
         .error-msg { color: var(--accent-red); font-size: 0.9rem; margin-top: 0.5rem; text-align: center; min-height: 1.2rem; }
-        .success-msg { color: var(--accent-green); font-size: 0.9rem; margin-top: 0.5rem; text-align: center; min-height: 1.2rem; font-weight: 600; }
+        .success-msg { color: var(--accent-green); font-size: 0.95rem; margin-top: 0.5rem; text-align: center; min-height: 1.2rem; font-weight: 600; }
         
         .password-rules {
             background: rgba(10, 14, 39, 0.5);
@@ -136,6 +136,23 @@
         .rule.valid { color: var(--accent-green); }
         .rule.invalid { color: var(--accent-red); }
         .rule-icon { font-size: 0.9rem; }
+        
+        .booking-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid var(--accent-green);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .booking-success h3 { color: var(--accent-green); margin-bottom: 0.5rem; }
+        
+        .no-events {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
@@ -160,7 +177,7 @@
                     <input type="password" id="login-password" placeholder="Password">
                     <button type="button" class="toggle-password" onclick="togglePassword('login-password', this)">👁️</button>
                 </div>
-                <button onclick="login()">Access Dashboard</button>
+                <button id="login-btn" onclick="login()">Access Dashboard</button>
                 <div id="login-error" class="error-msg"></div>
                 <div id="login-success" class="success-msg"></div>
             </div>
@@ -186,7 +203,7 @@
                     <div class="rule invalid" id="rule-match"><span class="rule-icon">○</span> Passwords match</div>
                 </div>
                 
-                <button onclick="register()">Create Account</button>
+                <button id="register-btn" onclick="register()">Create Account</button>
                 <div id="register-error" class="error-msg"></div>
                 <div id="register-success" class="success-msg"></div>
             </div>
@@ -194,14 +211,20 @@
 
         <div id="booking-section" class="hidden">
             <h2 class="section-title"> Upcoming Events</h2>
-            <div id="events-list" class="events-grid">Loading events...</div>
+            <div id="events-list" class="events-grid">
+                <div class="no-events">Loading events...</div>
+            </div>
             
             <div class="card" style="margin-top: 3rem;">
                 <h2>🎟️ Reserve Your Seat</h2>
-                <select id="event-select"></select>
+                <select id="event-select">
+                    <option value="">-- Select an Event --</option>
+                </select>
                 <input type="text" id="booker-name" placeholder="Full Name">
                 <input type="email" id="booker-email" placeholder="Email Address">
                 <button onclick="bookTicket()">Confirm Booking</button>
+                <div id="booking-error" class="error-msg"></div>
+                <div id="booking-success" class="success-msg"></div>
             </div>
         </div>
 
@@ -237,19 +260,13 @@
 
         function togglePassword(inputId, button) {
             const input = document.getElementById(inputId);
-            if (input.type === 'password') {
-                input.type = 'text';
-                button.innerText = '🙈';
-            } else {
-                input.type = 'password';
-                button.innerText = '👁️';
-            }
+            if (input.type === 'password') { input.type = 'text'; button.innerText = '🙈'; } 
+            else { input.type = 'password'; button.innerText = '👁️'; }
         }
 
         function checkPasswordStrength() {
             const password = document.getElementById('reg-password').value;
             const confirm = document.getElementById('reg-confirm').value;
-            
             const rules = {
                 length: password.length >= 8,
                 letter: /[a-zA-Z]/.test(password),
@@ -257,13 +274,9 @@
                 symbol: /[^a-zA-Z0-9]/.test(password),
                 match: password.length > 0 && confirm.length > 0 && password === confirm
             };
-            
             for (const [key, isValid] of Object.entries(rules)) {
                 const el = document.getElementById(`rule-${key}`);
-                if (el) {
-                    el.className = `rule ${isValid ? 'valid' : 'invalid'}`;
-                    el.querySelector('.rule-icon').innerText = isValid ? '✓' : '○';
-                }
+                if (el) { el.className = `rule ${isValid ? 'valid' : 'invalid'}`; el.querySelector('.rule-icon').innerText = isValid ? '✓' : '○'; }
             }
         }
 
@@ -273,52 +286,55 @@
             const confirm = document.getElementById('reg-confirm').value;
             const errorDiv = document.getElementById('register-error');
             const successDiv = document.getElementById('register-success');
+            const btn = document.getElementById('register-btn');
             
             errorDiv.innerText = '';
             successDiv.innerText = '';
             
-            if (!username || !password || !confirm) {
-                errorDiv.innerText = '⚠️ Please fill all fields';
-                return;
-            }
-            
-            if (password.length < 8) { errorDiv.innerText = '⚠️ Password must be at least 8 characters'; return; }
-            if (!/[a-zA-Z]/.test(password)) { errorDiv.innerText = '⚠️ Password must contain at least one letter'; return; }
+            if (!username || !password || !confirm) { errorDiv.innerText = '⚠️ Please fill all fields'; return; }
+            if (password.length < 8) { errorDiv.innerText = '️ Password must be at least 8 characters'; return; }
+            if (!/[a-zA-Z]/.test(password)) { errorDiv.innerText = '️ Password must contain at least one letter'; return; }
             if (!/[0-9]/.test(password)) { errorDiv.innerText = '⚠️ Password must contain at least one number'; return; }
-            if (!/[^a-zA-Z0-9]/.test(password)) { errorDiv.innerText = '⚠️ Password must contain at least one symbol (!@#$%^&*)'; return; }
+            if (!/[^a-zA-Z0-9]/.test(password)) { errorDiv.innerText = '️ Password must contain at least one symbol (!@#$%^&*)'; return; }
             if (password !== confirm) { errorDiv.innerText = '⚠️ Passwords do not match'; return; }
+            
+            btn.innerText = 'Creating Account...';
+            btn.style.opacity = '0.7';
             
             try {
                 const res = await fetch('/api/register', { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ username, password }) 
                 });
                 const data = await res.json();
                 
                 if (res.ok) { 
-                    successDiv.innerText = '✅ Registration successful! Redirecting to login...';
-                    showToast('Registration successful! Please login.', 'success');
+                    successDiv.innerText = '✅ Successfully registered! Redirecting to login...';
+                    showToast('Registration successful!', 'success');
                     
-                    // Clear register form
                     document.getElementById('reg-username').value = '';
                     document.getElementById('reg-password').value = '';
                     document.getElementById('reg-confirm').value = '';
                     checkPasswordStrength();
                     
-                    // Switch to login tab after 1.5 seconds
                     setTimeout(() => {
                         switchTab('login');
                         document.getElementById('login-username').value = username;
                         document.getElementById('login-password').focus();
                         document.getElementById('login-success').innerText = '✅ Account created! Please login with your credentials.';
-                    }, 1500);
+                        btn.innerText = 'Create Account';
+                        btn.style.opacity = '1';
+                    }, 2000);
                 } else { 
                     errorDiv.innerText = '⚠️ ' + (data.error || 'Registration failed');
+                    btn.innerText = 'Create Account';
+                    btn.style.opacity = '1';
                 }
             } catch (err) {
-                errorDiv.innerText = '⚠️ Network error. Please try again.';
-                console.error('Registration error:', err);
+                errorDiv.innerText = '⚠️ Connection error. Please try again.';
+                btn.innerText = 'Create Account';
+                btn.style.opacity = '1';
+                console.error('Register error:', err);
             }
         }
 
@@ -327,19 +343,19 @@
             const password = document.getElementById('login-password').value;
             const errorDiv = document.getElementById('login-error');
             const successDiv = document.getElementById('login-success');
+            const btn = document.getElementById('login-btn');
             
             errorDiv.innerText = '';
             successDiv.innerText = '';
             
-            if (!username || !password) {
-                errorDiv.innerText = '⚠️ Please fill all fields';
-                return;
-            }
+            if (!username || !password) { errorDiv.innerText = '️ Please fill all fields'; return; }
+            
+            btn.innerText = 'Logging in...';
+            btn.style.opacity = '0.7';
             
             try {
                 const res = await fetch('/api/login', { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ username, password }) 
                 });
                 const data = await res.json();
@@ -349,19 +365,22 @@
                     document.getElementById('auth-section').classList.add('hidden'); 
                     document.getElementById('booking-section').classList.remove('hidden'); 
                     document.getElementById('logout-btn').classList.remove('hidden');
-                    
                     const userInfo = document.getElementById('user-info'); 
                     userInfo.className = `user-badge`; 
                     userInfo.innerHTML = `${data.role === 'admin' ? '🛡️' : '👤'} ${data.username} (${data.role})`; 
                     userInfo.classList.remove('hidden');
-                    
                     if (data.role === 'admin') document.getElementById('admin-section').classList.remove('hidden');
-                    loadEvents(); showToast(`Welcome back, ${data.username}!`, 'success');
+                    loadEvents();
+                    showToast(`Welcome back, ${data.username}!`, 'success');
                 } else { 
-                    errorDiv.innerText = '⚠️ ' + (data.error || 'Login failed');
+                    errorDiv.innerText = '️ ' + (data.error || 'Login failed');
+                    btn.innerText = 'Access Dashboard';
+                    btn.style.opacity = '1';
                 }
             } catch (err) {
-                errorDiv.innerText = '⚠️ Network error. Please try again.';
+                errorDiv.innerText = '⚠️ Connection error. Please try again.';
+                btn.innerText = 'Access Dashboard';
+                btn.style.opacity = '1';
                 console.error('Login error:', err);
             }
         }
@@ -375,27 +394,62 @@
             document.getElementById('user-info').classList.add('hidden'); 
             document.getElementById('login-username').value = '';
             document.getElementById('login-password').value = '';
+            document.getElementById('events-list').innerHTML = '<div class="no-events">Loading events...</div>';
+            document.getElementById('event-select').innerHTML = '<option value="">-- Select an Event --</option>';
             showToast('Logged out successfully', 'success'); 
         }
 
         async function loadEvents() {
-            const res = await fetch('/api/events'); const data = await res.json(); 
-            const list = document.getElementById('events-list'); const select = document.getElementById('event-select'); 
-            list.innerHTML = ''; select.innerHTML = '<option value="">-- Select an Event --</option>';
+            console.log('🔄 Loading events...');
+            const list = document.getElementById('events-list');
+            const select = document.getElementById('event-select');
             
-            data.data.forEach(event => {
-                const catClass = event.category ? `cat-${event.category.toLowerCase()}` : '';
-                list.innerHTML += `<div class="event-card">
-                    <div><span class="event-category ${catClass}">${event.category}</span>
-                    <div class="event-title">${event.name}</div></div>
-                    <div class="countdown"><div class="countdown-time" id="timer-${event.id}">Calculating...</div></div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div class="event-price">$${event.price}</div>
-                        <div style="color:var(--text-secondary)">${event.availableSeats} seats left</div>
-                    </div></div>`;
-                select.innerHTML += `<option value="${event.id}">${event.name} - $${event.price}</option>`;
-            });
-            startCountdowns(data.data);
+            try {
+                const res = await fetch('/api/events');
+                console.log('📡 Events API response status:', res.status);
+                const data = await res.json();
+                console.log('📦 Events data received:', data);
+                
+                if (!res.ok) {
+                    list.innerHTML = '<div class="no-events">❌ Failed to load events. Please refresh.</div>';
+                    return;
+                }
+                
+                if (!data.data || data.data.length === 0) {
+                    list.innerHTML = '<div class="no-events">📭 No events available</div>';
+                    return;
+                }
+                
+                list.innerHTML = '';
+                select.innerHTML = '<option value="">-- Select an Event --</option>';
+                
+                data.data.forEach(event => {
+                    const catClass = event.category ? `cat-${event.category.toLowerCase()}` : '';
+                    list.innerHTML += `
+                        <div class="event-card">
+                            <div>
+                                <span class="event-category ${catClass}">${event.category}</span>
+                                <div class="event-title">${event.name}</div>
+                                <div style="color: var(--text-secondary); font-size: 0.9rem;">📅 ${event.date}</div>
+                            </div>
+                            <div class="countdown">
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.3rem;">Starts In</div>
+                                <div class="countdown-time" id="timer-${event.id}">Calculating...</div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div class="event-price">$${event.price}</div>
+                                <div style="color:var(--text-secondary)"><strong style="color: var(--accent-cyan);">${event.availableSeats}</strong> seats left</div>
+                            </div>
+                        </div>`;
+                    select.innerHTML += `<option value="${event.id}">${event.name} - $${event.price} (${event.availableSeats} seats)</option>`;
+                });
+                
+                console.log('✅ Events loaded:', data.data.length);
+                startCountdowns(data.data);
+            } catch (err) {
+                console.error('❌ Error loading events:', err);
+                list.innerHTML = '<div class="no-events">❌ Network error. Please check your connection.</div>';
+            }
         }
 
         function startCountdowns(events) { 
@@ -403,7 +457,7 @@
                 events.forEach(event => { 
                     const distance = new Date(`${event.date}T18:00:00`).getTime() - new Date().getTime(); 
                     const el = document.getElementById(`timer-${event.id}`); 
-                    if (distance < 0) { if(el) el.innerText = "Started!"; return; } 
+                    if (distance < 0) { if(el) el.innerText = " Started!"; return; } 
                     const d = Math.floor(distance / (1000 * 60 * 60 * 24)); 
                     const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); 
                     const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)); 
@@ -415,22 +469,61 @@
 
         async function bookTicket() {
             const eventId = parseInt(document.getElementById('event-select').value); 
-            const userName = document.getElementById('booker-name').value; 
-            const userEmail = document.getElementById('booker-email').value;
-            if(!eventId || !userName || !userEmail) return showToast('Please fill all fields', 'error');
+            const userName = document.getElementById('booker-name').value.trim(); 
+            const userEmail = document.getElementById('booker-email').value.trim();
+            const errorDiv = document.getElementById('booking-error');
+            const successDiv = document.getElementById('booking-success');
             
-            const lastBookingTime = localStorage.getItem(`lastBooking_${currentUser}`); const now = Date.now();
-            if (lastBookingTime && (now - parseInt(lastBookingTime)) < 300000) return showToast('Please wait 5 mins to book again', 'error');
+            errorDiv.innerText = '';
+            successDiv.innerText = '';
             
-            const res = await fetch('/api/bookings', { 
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, 
-                body: JSON.stringify({ eventId, userName, userEmail }) 
-            });
-            const data = await res.json();
-            if (res.ok) { 
-                localStorage.setItem(`lastBooking_${currentUser}`, now); 
-                showToast(`Success! Booked for ${data.data.eventName}`, 'success'); loadEvents(); 
-            } else { showToast(data.error, 'error'); }
+            if(!eventId) { errorDiv.innerText = '⚠️ Please select an event'; return; }
+            if(!userName || !userEmail) { errorDiv.innerText = '⚠️ Please fill all fields'; return; }
+            
+            const lastBookingTime = localStorage.getItem(`lastBooking_${currentUser}`); 
+            const now = Date.now();
+            if (lastBookingTime && (now - parseInt(lastBookingTime)) < 300000) {
+                errorDiv.innerText = '️ Please wait 5 mins to book again';
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/bookings', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, 
+                    body: JSON.stringify({ eventId, userName, userEmail }) 
+                });
+                const data = await res.json();
+                
+                if (res.ok) { 
+                    localStorage.setItem(`lastBooking_${currentUser}`, now);
+                    
+                    // Show beautiful success message
+                    successDiv.innerHTML = `
+                        <div class="booking-success">
+                            <h3>🎉 Booking Successful!</h3>
+                            <p style="margin: 0.5rem 0;"><strong>Event:</strong> ${data.data.eventName}</p>
+                            <p style="margin: 0.5rem 0;"><strong>Category:</strong> ${data.data.category}</p>
+                            <p style="margin: 0.5rem 0;"><strong>Price:</strong> $${data.data.price}</p>
+                            <p style="margin: 0.5rem 0;"><strong>Booked for:</strong> ${userName}</p>
+                            <p style="margin: 0.5rem 0; color: var(--accent-green);"><strong>✅ Confirmation sent to:</strong> ${userEmail}</p>
+                        </div>
+                    `;
+                    
+                    showToast(`Success! Booked for ${data.data.eventName}`, 'success');
+                    loadEvents();
+                    
+                    // Clear form
+                    document.getElementById('booker-name').value = '';
+                    document.getElementById('booker-email').value = '';
+                    document.getElementById('event-select').value = '';
+                } else { 
+                    errorDiv.innerText = '⚠️ ' + (data.error || 'Booking failed');
+                }
+            } catch (err) {
+                errorDiv.innerText = '️ Network error. Please try again.';
+                console.error('Booking error:', err);
+            }
         }
 
         async function loadAdminData() {
