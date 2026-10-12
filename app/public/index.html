@@ -585,5 +585,14 @@
             }
         }
     </script>
+<script>
+    // Auto-refresh admin dashboard every 3 seconds
+    setInterval(() => {
+        // Only run if the user is logged in and the admin panel is open
+        if (authToken && !document.getElementById('admin-section').classList.contains('hidden')) {
+            loadAdminData();
+        }
+    }, 3000);
+</script>
 </body>
 </html>
