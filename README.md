@@ -81,3 +81,25 @@ azure-appservice-project/
 ├── Dockerfile                  # Instructions for building the container image
 ├── package.json                # Node.js dependencies and scripts
 └── README.md                   # This file
+
+----
+
+## 🔌 API Documentation
+
+The application exposes a RESTful API for managing authentication, events, and bookings. 
+
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/health` | Health check for CI/CD pipeline and monitoring. | ❌ No |
+| **POST** | `/api/register` | Registers a new user and hashes the password using `bcryptjs`. | ❌ No |
+| **POST** | `/api/login` | Authenticates a user and returns a role-based session token. | ❌ No |
+| **GET** | `/api/events` | Fetches the list of available events with countdown data. | ❌ No |
+| **POST** | `/api/bookings` | Creates a new booking (enforces cooldown & duplicate checks). | ✅ Yes (User/Admin) |
+| **GET** | `/api/admin/bookings` | Fetches all system bookings (Admin Dashboard data). | ✅ Yes (Admin Only) |
+
+**Example Request (Create Booking):**
+```bash
+curl -X POST -H "Content-Type: application/json" \
+-H "Authorization: Bearer <YOUR_TOKEN>" \
+-d '{"eventId": 1, "userName": "John Doe", "userEmail": "john@example.com"}' \
+https://your-app.azurewebsites.net/api/bookings

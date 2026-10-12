@@ -522,7 +522,12 @@
             
             errorDiv.innerText = '';
             successDiv.innerText = '';
-            
+
+        // Auto-hide success message after 2 seconds
+        setTimeout(() => {
+            successDiv.innerHTML = '';
+        }, 2000);        
+    
             if(!eventId) { errorDiv.innerText = 'Please select an event'; return; }
             if(!userName || !userEmail) { errorDiv.innerText = 'Please fill all fields'; return; }
             
