@@ -60,24 +60,51 @@
             border-radius: 12px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; width: 100%; font-size: 1rem; 
         }
         button:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(139, 92, 246, 0.4); }
+        button:active { transform: translateY(-1px); }
         
         .card { 
             background: var(--bg-card); padding: 2.5rem; border-radius: 20px; border: 1px solid var(--border-color); 
             max-width: 500px; margin: 0 auto; 
         }
         .card h2 { margin-bottom: 1.5rem; color: var(--text-primary); font-size: 1.8rem; font-weight: 700; text-align: center; }
-        input, select { 
+        
+        /* Password Input with Toggle */
+        .password-wrapper {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        .password-wrapper input {
+            width: 100%; padding: 1rem 3rem 1rem 1.2rem; background: var(--bg-main); 
+            border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); font-size: 1rem; 
+        }
+        .password-wrapper input:focus { outline: none; border-color: var(--accent-purple); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.3rem;
+            width: auto;
+            box-shadow: none;
+        }
+        .toggle-password:hover { color: var(--accent-purple); transform: translateY(-50%) scale(1.1); box-shadow: none; }
+        
+        input:not(.password-wrapper input), select { 
             width: 100%; padding: 1rem 1.2rem; margin-bottom: 1rem; background: var(--bg-main); 
             border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); font-size: 1rem; 
         }
-        input:focus, select:focus { outline: none; border-color: var(--accent-purple); }
+        input:not(.password-wrapper input):focus, select:focus { outline: none; border-color: var(--accent-purple); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
         
-        /* Tab Switcher Styles */
         .auth-tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); }
         .auth-tab { 
             flex: 1; background: transparent; color: var(--text-secondary); border: none; 
             border-bottom: 3px solid transparent; border-radius: 0; padding: 1rem; font-size: 1.1rem; 
-            box-shadow: none; width: auto; 
+            box-shadow: none; width: auto; cursor: pointer;
         }
         .auth-tab:hover { background: transparent; transform: none; box-shadow: none; color: var(--text-primary); }
         .auth-tab.active { color: var(--accent-purple); border-bottom-color: var(--accent-purple); }
@@ -105,6 +132,23 @@
             font-size: 2.2rem; font-weight: 800; margin-bottom: 2rem; 
             background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; 
         }
+        
+        .error-msg { color: var(--accent-red); font-size: 0.9rem; margin-top: 0.5rem; text-align: center; min-height: 1.2rem; }
+        
+        /* Password Strength Indicator */
+        .password-rules {
+            background: rgba(10, 14, 39, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+        }
+        .password-rules p { margin-bottom: 0.3rem; color: var(--text-secondary); }
+        .rule { display: flex; align-items: center; gap: 0.5rem; transition: color 0.3s ease; }
+        .rule.valid { color: var(--accent-green); }
+        .rule.invalid { color: var(--accent-red); }
+        .rule-icon { font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -116,38 +160,56 @@
             <button id="logout-btn" class="logout-btn hidden" onclick="logout()">Logout</button>
         </header>
 
-        <!-- AUTHENTICATION SECTION (LOGIN & REGISTER TABS) -->
         <div id="auth-section" class="card">
             <div class="auth-tabs">
                 <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
                 <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Register</button>
             </div>
             
-            <!-- Login Form -->
             <div id="login-form">
                 <h2>🔐 Welcome Back</h2>
                 <input type="text" id="login-username" placeholder="Username">
-                <input type="password" id="login-password" placeholder="Password">
+                <div class="password-wrapper">
+                    <input type="password" id="login-password" placeholder="Password">
+                    <button type="button" class="toggle-password" onclick="togglePassword('login-password', this)">👁️</button>
+                </div>
                 <button onclick="login()">Access Dashboard</button>
+                <div id="login-error" class="error-msg"></div>
             </div>
 
-            <!-- Register Form -->
             <div id="register-form" class="hidden">
-                <h2> Create Account</h2>
+                <h2>📝 Create Account</h2>
                 <input type="text" id="reg-username" placeholder="Choose a Username">
-                <input type="password" id="reg-password" placeholder="Choose a Password">
-                <input type="password" id="reg-confirm" placeholder="Confirm Password">
+                <div class="password-wrapper">
+                    <input type="password" id="reg-password" placeholder="Choose a Password" oninput="checkPasswordStrength()">
+                    <button type="button" class="toggle-password" onclick="togglePassword('reg-password', this)">👁️</button>
+                </div>
+                <div class="password-wrapper">
+                    <input type="password" id="reg-confirm" placeholder="Confirm Password" oninput="checkPasswordStrength()">
+                    <button type="button" class="toggle-password" onclick="togglePassword('reg-confirm', this)">👁️</button>
+                </div>
+                
+                <!-- Live Password Strength Indicator -->
+                <div class="password-rules" id="password-rules">
+                    <p style="margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">Password must contain:</p>
+                    <div class="rule invalid" id="rule-length"><span class="rule-icon">○</span> At least 8 characters</div>
+                    <div class="rule invalid" id="rule-letter"><span class="rule-icon">○</span> At least one letter</div>
+                    <div class="rule invalid" id="rule-number"><span class="rule-icon">○</span> At least one number</div>
+                    <div class="rule invalid" id="rule-symbol"><span class="rule-icon">○</span> At least one symbol (!@#$%^&*)</div>
+                    <div class="rule invalid" id="rule-match"><span class="rule-icon">○</span> Passwords match</div>
+                </div>
+                
                 <button onclick="register()">Create Account</button>
+                <div id="register-error" class="error-msg"></div>
             </div>
         </div>
 
-        <!-- BOOKING SECTION -->
         <div id="booking-section" class="hidden">
             <h2 class="section-title">🌟 Upcoming Events</h2>
             <div id="events-list" class="events-grid">Loading events...</div>
             
             <div class="card" style="margin-top: 3rem;">
-                <h2>🎟️ Reserve Your Seat</h2>
+                <h2>️ Reserve Your Seat</h2>
                 <select id="event-select"></select>
                 <input type="text" id="booker-name" placeholder="Full Name">
                 <input type="email" id="booker-email" placeholder="Email Address">
@@ -155,10 +217,9 @@
             </div>
         </div>
 
-        <!-- ADMIN DASHBOARD -->
         <div id="admin-section" class="hidden" style="margin-top: 3rem;">
             <div class="card admin-card">
-                <h2>️ Admin Dashboard</h2>
+                <h2>🛡️ Admin Dashboard</h2>
                 <button onclick="loadAdminData()" style="width: auto; margin-bottom: 1rem;">Refresh Data</button>
                 <div id="admin-view"></div>
             </div>
@@ -180,15 +241,64 @@
             document.getElementById('tab-register').classList.toggle('active', tab === 'register'); 
             document.getElementById('login-form').classList.toggle('hidden', tab !== 'login'); 
             document.getElementById('register-form').classList.toggle('hidden', tab !== 'register'); 
+            document.getElementById('login-error').innerText = '';
+            document.getElementById('register-error').innerText = '';
+        }
+
+        // --- SHOW/HIDE PASSWORD TOGGLE ---
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.innerText = '🙈';
+            } else {
+                input.type = 'password';
+                button.innerText = '👁️';
+            }
+        }
+
+        // --- LIVE PASSWORD STRENGTH CHECKER ---
+        function checkPasswordStrength() {
+            const password = document.getElementById('reg-password').value;
+            const confirm = document.getElementById('reg-confirm').value;
+            
+            const rules = {
+                length: password.length >= 8,
+                letter: /[a-zA-Z]/.test(password),
+                number: /[0-9]/.test(password),
+                symbol: /[^a-zA-Z0-9]/.test(password),
+                match: password.length > 0 && confirm.length > 0 && password === confirm
+            };
+            
+            // Update UI for each rule
+            for (const [key, isValid] of Object.entries(rules)) {
+                const el = document.getElementById(`rule-${key}`);
+                if (el) {
+                    el.className = `rule ${isValid ? 'valid' : 'invalid'}`;
+                    el.querySelector('.rule-icon').innerText = isValid ? '✓' : '○';
+                }
+            }
         }
 
         async function register() {
-            const username = document.getElementById('reg-username').value; 
+            const username = document.getElementById('reg-username').value.trim(); 
             const password = document.getElementById('reg-password').value; 
             const confirm = document.getElementById('reg-confirm').value;
+            const errorDiv = document.getElementById('register-error');
             
-            if (!username || !password) return showToast('Please fill all fields', 'error');
-            if (password !== confirm) return showToast('Passwords do not match', 'error');
+            errorDiv.innerText = '';
+            
+            if (!username || !password || !confirm) {
+                errorDiv.innerText = '️ Please fill all fields';
+                return;
+            }
+            
+            // Password validation
+            if (password.length < 8) { errorDiv.innerText = '⚠️ Password must be at least 8 characters'; return; }
+            if (!/[a-zA-Z]/.test(password)) { errorDiv.innerText = '️ Password must contain at least one letter'; return; }
+            if (!/[0-9]/.test(password)) { errorDiv.innerText = '️ Password must contain at least one number'; return; }
+            if (!/[^a-zA-Z0-9]/.test(password)) { errorDiv.innerText = '⚠️ Password must contain at least one symbol (!@#$%^&*)'; return; }
+            if (password !== confirm) { errorDiv.innerText = '️ Passwords do not match'; return; }
             
             const res = await fetch('/api/register', { 
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, 
@@ -200,12 +310,27 @@
                 showToast('Registration successful! Please login.', 'success'); 
                 switchTab('login'); 
                 document.getElementById('login-username').value = username; 
-            } else { showToast(data.error, 'error'); }
+                // Reset register form
+                document.getElementById('reg-username').value = '';
+                document.getElementById('reg-password').value = '';
+                document.getElementById('reg-confirm').value = '';
+                checkPasswordStrength();
+            } else { 
+                errorDiv.innerText = '⚠️ ' + data.error;
+            }
         }
 
         async function login() {
-            const username = document.getElementById('login-username').value; 
+            const username = document.getElementById('login-username').value.trim(); 
             const password = document.getElementById('login-password').value;
+            const errorDiv = document.getElementById('login-error');
+            
+            errorDiv.innerText = '';
+            
+            if (!username || !password) {
+                errorDiv.innerText = '⚠️ Please fill all fields';
+                return;
+            }
             
             const res = await fetch('/api/login', { 
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, 
@@ -226,7 +351,9 @@
                 
                 if (data.role === 'admin') document.getElementById('admin-section').classList.remove('hidden');
                 loadEvents(); showToast(`Welcome back, ${data.username}!`, 'success');
-            } else { showToast(data.error, 'error'); }
+            } else { 
+                errorDiv.innerText = '⚠️ ' + data.error;
+            }
         }
 
         function logout() { 
