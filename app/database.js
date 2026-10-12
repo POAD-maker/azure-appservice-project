@@ -1,9 +1,8 @@
-// MOCK DATABASE LAYER
 const bcrypt = require('bcryptjs');
 const saltRounds = 10;
 
 const db = {
-  // Default passwords are hashed on startup using hashSync
+  // Default users are hashed on startup
   users: [
     { username: 'admin', password: bcrypt.hashSync('password123', saltRounds), role: 'admin' },
     { username: 'user', password: bcrypt.hashSync('password123', saltRounds), role: 'user' }
@@ -21,7 +20,7 @@ const database = {
     const exists = db.users.find(u => u.username === username);
     if (exists) throw new Error('Username already taken');
     
-    // Hash the new password before storing
+    // Hash the password before storing
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const newUser = { username, password: hashedPassword, role: 'user' };
     db.users.push(newUser);
@@ -32,16 +31,14 @@ const database = {
     const user = db.users.find(u => u.username === username);
     if (!user) throw new Error('Invalid username or password');
     
-    // Compare the plain text password with the stored hash
+    // Securely compare the plain text password with the stored hash
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new Error('Invalid username or password');
     
     return user;
   },
 
-  getEvents: async () => {
-    return db.events.map(e => ({ ...e, availableSeats: e.totalSeats - e.bookedSeats }));
-  },
+  getEvents: async () => db.events.map(e => ({ ...e, availableSeats: e.totalSeats - e.bookedSeats })),
   
   createBooking: async (eventId, userName, userEmail) => {
     const event = db.events.find(e => e.id === eventId);
@@ -51,29 +48,14 @@ const database = {
     const isDuplicate = db.bookings.some(b => b.eventId === eventId && b.userEmail === userEmail);
     if (isDuplicate) throw new Error('This email has already booked this event.');
 
-    const booking = {
-      id: Date.now(),
-      eventId,
-      eventName: event.name,
-      category: event.category,
-      price: event.price,
-      userName,
-      userEmail,
-      bookedAt: new Date().toISOString()
-    };
-    
+    const booking = { id: Date.now(), eventId, eventName: event.name, category: event.category, price: event.price, userName, userEmail, bookedAt: new Date().toISOString() };
     db.bookings.push(booking);
     event.bookedSeats += 1;
     return booking;
   },
 
-  getAllBookings: async () => {
-    return db.bookings;
-  },
-
-  checkConnection: async () => {
-    return true; 
-  }
+  getAllBookings: async () => db.bookings,
+  checkConnection: async () => true
 };
 
 module.exports = database;
