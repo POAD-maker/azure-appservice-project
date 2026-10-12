@@ -2,7 +2,6 @@ const bcrypt = require('bcryptjs');
 const saltRounds = 10;
 
 const db = {
-  // Default users are hashed on startup
   users: [
     { username: 'admin', password: bcrypt.hashSync('password123', saltRounds), role: 'admin' },
     { username: 'user', password: bcrypt.hashSync('password123', saltRounds), role: 'user' }
@@ -19,8 +18,6 @@ const database = {
   registerUser: async (username, password) => {
     const exists = db.users.find(u => u.username === username);
     if (exists) throw new Error('Username already taken');
-    
-    // Hash the password before storing
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const newUser = { username, password: hashedPassword, role: 'user' };
     db.users.push(newUser);
@@ -30,11 +27,8 @@ const database = {
   loginUser: async (username, password) => {
     const user = db.users.find(u => u.username === username);
     if (!user) throw new Error('Invalid username or password');
-    
-    // Securely compare the plain text password with the stored hash
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new Error('Invalid username or password');
-    
     return user;
   },
 
@@ -44,10 +38,8 @@ const database = {
     const event = db.events.find(e => e.id === eventId);
     if (!event) throw new Error('Event not found');
     if (event.bookedSeats >= event.totalSeats) throw new Error('Event is sold out');
-
     const isDuplicate = db.bookings.some(b => b.eventId === eventId && b.userEmail === userEmail);
     if (isDuplicate) throw new Error('This email has already booked this event.');
-
     const booking = { id: Date.now(), eventId, eventName: event.name, category: event.category, price: event.price, userName, userEmail, bookedAt: new Date().toISOString() };
     db.bookings.push(booking);
     event.bookedSeats += 1;
