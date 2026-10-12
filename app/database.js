@@ -1,18 +1,44 @@
 // MOCK DATABASE LAYER
-// In a real production environment, this file would contain the Azure PostgreSQL connection logic.
-// For this DevOps demonstration, we use an in-memory store to ensure 100% reliability during the CI/CD demo.
+const bcrypt = require('bcryptjs');
+const saltRounds = 10;
 
 const db = {
+  // Default passwords are hashed on startup using hashSync
+  users: [
+    { username: 'admin', password: bcrypt.hashSync('password123', saltRounds), role: 'admin' },
+    { username: 'user', password: bcrypt.hashSync('password123', saltRounds), role: 'user' }
+  ],
   events: [
-    { id: 1, name: 'DevOps Bootcamp Final Presentation', date: '2026-10-15', totalSeats: 50, bookedSeats: 0 },
-    { id: 2, name: 'Cloud Architecture Summit', date: '2026-11-01', totalSeats: 100, bookedSeats: 0 },
-    { id: 3, name: 'Azure App Service Workshop', date: '2026-11-10', totalSeats: 25, bookedSeats: 0 }
+    { id: 1, name: 'DevOps Bootcamp Final Presentation', date: '2026-10-15', category: 'Education', price: 0, totalSeats: 50, bookedSeats: 0 },
+    { id: 2, name: 'Cloud Architecture Summit', date: '2026-11-01', category: 'Technology', price: 150, totalSeats: 100, bookedSeats: 0 },
+    { id: 3, name: 'Azure App Service Workshop', date: '2026-11-10', category: 'Workshop', price: 75, totalSeats: 25, bookedSeats: 0 }
   ],
   bookings: []
 };
 
-// Simulate async database queries
 const database = {
+  registerUser: async (username, password) => {
+    const exists = db.users.find(u => u.username === username);
+    if (exists) throw new Error('Username already taken');
+    
+    // Hash the new password before storing
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const newUser = { username, password: hashedPassword, role: 'user' };
+    db.users.push(newUser);
+    return newUser;
+  },
+
+  loginUser: async (username, password) => {
+    const user = db.users.find(u => u.username === username);
+    if (!user) throw new Error('Invalid username or password');
+    
+    // Compare the plain text password with the stored hash
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) throw new Error('Invalid username or password');
+    
+    return user;
+  },
+
   getEvents: async () => {
     return db.events.map(e => ({ ...e, availableSeats: e.totalSeats - e.bookedSeats }));
   },
@@ -22,16 +48,15 @@ const database = {
     if (!event) throw new Error('Event not found');
     if (event.bookedSeats >= event.totalSeats) throw new Error('Event is sold out');
 
-    // --- NEW: CHECK FOR DUPLICATE BOOKING ---
     const isDuplicate = db.bookings.some(b => b.eventId === eventId && b.userEmail === userEmail);
-    if (isDuplicate) {
-        throw new Error('This email has already booked this event.');
-    }
+    if (isDuplicate) throw new Error('This email has already booked this event.');
 
     const booking = {
       id: Date.now(),
       eventId,
       eventName: event.name,
+      category: event.category,
+      price: event.price,
       userName,
       userEmail,
       bookedAt: new Date().toISOString()
@@ -47,7 +72,6 @@ const database = {
   },
 
   checkConnection: async () => {
-    // Simulates a DB ping
     return true; 
   }
 };
