@@ -1,19 +1,20 @@
 FROM node:18-alpine
 
-# Set working directory inside the container
+# Force fresh dependency install
 WORKDIR /app
 
-# Copy package files first for better layer caching
+# Copy package files first (better caching)
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Clean install to avoid cached node_modules issues
+RUN rm -rf node_modules && npm ci --only=production
 
-# Copy the rest of the application code (including the app/ and tests/ folders)
+# Copy all application code
 COPY . .
 
-# Expose the port the app runs on
+# Verify structure
+RUN ls -la /app/app/
+
 EXPOSE 80
 
-# Start the server from the new app/ directory
 CMD ["node", "app/server.js"]

@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const saltRounds = 10;
 
+console.log('🔧 Database module loaded at:', new Date().toISOString());
+
 const db = {
   users: [
     { username: 'admin', password: bcrypt.hashSync('password123', saltRounds), role: 'admin' },
@@ -13,6 +15,8 @@ const db = {
   ],
   bookings: []
 };
+
+console.log('✅ Database initialized with:', db.events.length, 'events and', db.users.length, 'users');
 
 const database = {
   registerUser: async (username, password) => {

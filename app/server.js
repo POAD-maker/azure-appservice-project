@@ -8,13 +8,11 @@ const PORT = process.env.PORT || 80;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
   next();
 });
 
-// Auth middleware
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -33,7 +31,6 @@ const requireAdmin = (req, res, next) => {
   else res.status(403).json({ error: 'Forbidden: Admin access required' });
 };
 
-// Health check
 app.get('/health', async (req, res) => {
   try {
     const dbStatus = await db.checkConnection();
@@ -43,21 +40,19 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Register
 app.post('/api/register', async (req, res) => {
   try {
-    console.log(' Register attempt:', req.body);
+    console.log('📝 Register attempt:', req.body);
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
     const user = await db.registerUser(username, password);
     res.status(201).json({ message: 'User registered successfully', username: user.username });
   } catch (error) { 
-    console.error('❌ Register error:', error.message);
+    console.error(' Register error:', error.message);
     res.status(400).json({ error: error.message }); 
   }
 });
 
-// Login
 app.post('/api/login', async (req, res) => {
   try {
     console.log('🔐 Login attempt:', req.body.username);
@@ -71,7 +66,6 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Get Events - THIS IS THE KEY FIX
 app.get('/api/events', async (req, res) => {
   try {
     console.log('📅 GET /api/events called');
@@ -84,7 +78,6 @@ app.get('/api/events', async (req, res) => {
   }
 });
 
-// Create Booking
 app.post('/api/bookings', authenticateToken, async (req, res) => {
   try {
     console.log('🎟️ Booking attempt:', req.body);
@@ -97,7 +90,6 @@ app.post('/api/bookings', authenticateToken, async (req, res) => {
   }
 });
 
-// Admin bookings
 app.get('/api/admin/bookings', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const bookings = await db.getAllBookings();
@@ -107,13 +99,19 @@ app.get('/api/admin/bookings', authenticateToken, requireAdmin, async (req, res)
   }
 });
 
-// Serve frontend
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {
   console.log(`✅ Ticket Booking App running on port ${PORT}`);
-  console.log(`📅 Loaded ${db.events.length} events`);
-  console.log(`👥 Loaded ${db.users.length} users`);
+  // Safe check for events
+  if (db && db.events) {
+    console.log(` Loaded ${db.events.length} events`);
+    console.log(`👥 Loaded ${db.users.length} users`);
+  } else {
+    console.error('❌ CRITICAL: Database module did not load correctly!');
+    console.error('db object:', typeof db);
+    console.error('db keys:', db ? Object.keys(db) : 'undefined');
+  }
 });
